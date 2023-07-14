@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Bezier Splines</title>
+        <link rel="stylesheet" href="../styles/splineStyles.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>Graphing Bezier Splines</h1>
+        </header>
+        <main>
+            <section id="left-side">
+                <h2>Specifications</h2>
+                <section>
+                    <label for="degree">Degree: </label>
+                    <input id="degree" type="number" placeholder="Enter a positive integer" min="0" step="1">
+                    <br>
+                    <label for="num-sections">Number of Sections</label>
+                    <input id="num-sections" type="number" value="10" min="1" max="40">
+                </section>
+                <section id="control-points-form">
+                    <h3>Control points</h3>
+                    <!-- Grand point holders go here under class name grand-point-holder -->
+                </section>
+                <button onclick="addGrandPointHolder()">Add Control Point</button>
+                <button onclick="bezierSpline()">Graph Bezier Curve</button>
+            </section>
+            <section id="right-side">
+                <canvas id="spline-canvas"></canvas>
+            </section>
+        </main>
+        <footer></footer>
+
+        <script src="../scripts/general_functionality.js"></script>
+        <script>
+            addGrandPointHolder();
+            addGrandPointHolder();
+            addGrandPointHolder();
+        </script>
+    </body>
+</html>
