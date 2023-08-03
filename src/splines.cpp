@@ -1,5 +1,6 @@
 #include "splines.hpp"
 #include <cmath>
+// #include <iostream>
 
 // For proper library to use abs: https://en.cppreference.com/w/cpp/numeric/math/abs
 
@@ -17,7 +18,7 @@ void BSplineMaker::setupN_ij(const vector<double>& knots, int i, int j, unordere
 
     if (j == 0) {
         for (double& el : newN) {
-            if (el >= knots[i] && el < knots[i+1]|| (el - knots[knots.size() - 1]) < delta)
+            if (el >= knots[i] && el < knots[i+1])  // adding || (el - knots[knots.size() - 1]) < delta causes failure for unknown reason
                 el = 1;
             else
                 el = 0;
@@ -36,7 +37,9 @@ void BSplineMaker::setupN_ij(const vector<double>& knots, int i, int j, unordere
             el = firstOmega * firstN[ctr] + secondCoef * secondN[ctr];
         }
     }
-
+    // cout << i << ", " << j << ": ";
+    // for (const double& el : newN) cout << el << " ";
+    // cout << endl;
     store[to_string(i) + "_" + to_string(j)] = newN;
 }
 
@@ -52,6 +55,9 @@ void BSplineMaker::makeBSplineCurves(const vector<double>& knots, int order, int
         t[i] = min + multiplier * i;
         // cout << "At " << i << " get " << t[i] << endl;
     }
+
+    //TODO: Fix this so that the last point is properly taken care of
+    t[numPoints - 1] -= 0.000001;   // Cheat to get the graph looking nicer
 
     unordered_map<string, vector<double>> store;
 

@@ -3,6 +3,7 @@
 //  https://stackoverflow.com/questions/71681491/passing-arrays-and-objects-from-javascript-to-c-in-web-assembly
 //  https://stackoverflow.com/questions/29319208/call-c-function-pointer-from-javascript/29319440#29319440
 
+// Trace names for plotly: https://plotly.com/javascript/line-charts/
 
 
 // Make the object and vector classes available globally after module is loaded
@@ -148,21 +149,23 @@ const stringVecVecF = (vec) => {
     return useStr;
 }
 
-const plotSpline = (splineVec, cpointsVec) => {
+const plotSpline = (splineVec, cpointsVec, order) => {
     const splineGraphData = [
         {
             // control points w/line
             x: [],
             y: [],
             mode: "lines",
-            type: "scatter"
+            type: "scatter",
+            name: "Control Polygon"
         },
         {
             // spline w/line
             x: [],
             y: [],
             mode: "lines",
-            type: "scatter"
+            type: "scatter",
+            name: "Spline of Order " + order.toString()
         },
     ];
 
@@ -182,7 +185,7 @@ const plotSpline = (splineVec, cpointsVec) => {
 
 }
 
-const plotCurves = (tVec, curveVec) => {
+const plotCurves = (tVec, curveVec, order) => {
     const curvesData = [];
     let x = [];
     for (let i = 0; i < tVec.size(); i++) {
@@ -203,7 +206,7 @@ const plotCurves = (tVec, curveVec) => {
 const getNumPoints = () => {
     const rawNumPoints = document.getElementById('num-points').value.toString();
     if (rawNumPoints.length == 0) {
-        alert("Please enter a number for the number of points.");
+        alert("Please enter a valid number for the number of points.");
         return;
     }
     return Number(rawNumPoints);
@@ -212,10 +215,20 @@ const getNumPoints = () => {
 const getOrder = () => {
     const rawOrder = document.getElementById('degree').value.toString();
     if (rawOrder.length == 0) {
-        alert("Please enter a number for degree.");
+        alert("Please enter a valid number for degree.");
         return;
     }
     return Number(rawOrder);
+}
+
+const getKnotType = () => {
+    const knotBtns = document.getElementsByClassName("r-btn");
+    for (let i = 0; i < knotBtns.length; i++) {
+        if (knotBtns[i].checked) {
+            return knotBtns[i].value;
+        }
+    }
+    return "";
 }
 
 const getCPointsVecVecF = () => {
@@ -230,9 +243,9 @@ const getCPointsVecVecF = () => {
             return;
         }
         if (i % 2 == 0) {
-            xVec.push_back(Number(rawPoints[i]))
+            xVec.push_back(Number(rawPoints[i].value))
         } else {
-            yVec.push_back(Number(rawPoints[i]));
+            yVec.push_back(Number(rawPoints[i].value));
         }
     }
     cpoints.push_back(xVec);
@@ -244,15 +257,26 @@ const getCPointsVecVecF = () => {
 
 const calcAndGraphBSpline = () => {
     const numPoints = getNumPoints();
+    if (numPoints === undefined) return;
     const order = getOrder();
+    if (order === undefined) return;
     const cpointsVec = getCPointsVecVecF();
+    if (cpointsVec === undefined) return;
 
     // Get knots
     // Currently, will just make it a uniform B-spline
     const numKnots = cpointsVec.get(0).size() + order + 1;
     const knots = new gVecF();
+    const knotType = getKnotType();
     for (let i = 0; i < numKnots; i++) {
-        knots.push_back(i);
+        if (knotType === "natural") {
+            knots.push_back(i);
+        } else {
+            if (i < numKnots / 2)
+                knots.push_back(0);
+            else
+                knots.push_back(1);
+        }
     }
 
     try {
@@ -267,7 +291,7 @@ const calcAndGraphBSpline = () => {
     const splineVec = bsplinemaker.getSpline();
     const curvesVec = bsplinemaker.getCurves();
 
-    plotSpline(splineVec, cpointsVec);
+    plotSpline(cpointsVec, splineVec, order);
     plotCurves(tVec, curvesVec);
 
 }
@@ -282,39 +306,5 @@ createModule().then(({BSplineMaker, VecF, VecVecF}) => {
 
     document.getElementById('graph-btn').addEventListener('click', () => {
         calcAndGraphBSpline();
-    })
-
-    const testBtn = document.getElementById("test-btn");
-    testBtn.addEventListener('click', () => {
-        const knots = new VecF();
-        arrIntoVecF([1, 2, 3, 4, 5, 6, 7, 8], knots);
-        console.log(knots);
-        console.log("knots: ", stringGVecF(knots));
-
-        const cpoints = new VecVecF();
-        arrIntoVecVecF([[0, 1, 2, 3], [0, 1, 1, 0]], cpoints);
-        console.log(typeof(cpoints.get(0)))
-
-        const order = 3;
-        const numPoints = 10;
-
-        try {
-            bsplinemaker.makeBSpline(cpoints, knots, order, numPoints);
-        } catch (error) {
-            alert("Error encountered.");
-            return;
-        }
-
-        const t = bsplinemaker.getT();
-        const spline = bsplinemaker.getSpline();
-        const curves = bsplinemaker.getCurves();
-        console.log("t",  stringGVecF(t));
-        console.log("spline\n", stringVecVecF(spline));
-        console.log("curves\n", stringVecVecF(curves));
-
-        plotCurves(t, curves);
-        plotSpline(spline, cpoints);
-    });
-    
-    
+    });  
 }).catch(console.log)

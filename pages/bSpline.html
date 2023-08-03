@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-
+<!-- For radio buttons, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio -->
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Bezier Splines</title>
+        <title>B-Splines</title>
         <link rel="stylesheet" href="../styles/splineStyles.css">
         <script src="../scripts/splines.js"></script>
         <!--https://www.w3schools.com/js/js_graphics_plotly.asp-->
@@ -21,7 +21,19 @@
                     <input id="degree" type="number" value="3" placeholder="Enter a positive integer" min="0" step="1">
                     <br>
                     <label for="num-points">Number of Points</label>
-                    <input id="num-points" type="number" value="10" min="1" max="40">
+                    <input id="num-points" type="number" value="25" min="1" max="40">
+                </section>
+                <section>
+                    <!-- See the Mozilla radio button source -->
+                    <h3>Select a knot sequence:</h3>
+                    <div>
+                        <input type="radio" id="uniform" name="knot-seq-type" value="natural" class="r-btn" checked />
+                        <label for="natural">0, 1, 2, ...</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="zero-and-one" name="knot-seq-type" value="zero-and-one" class="r-btn" />
+                        <label for="zero-and-one">..., 0, 1, ...</label>
+                    </div>
                 </section>
                 <section id="control-points-form">
                     <h3>Control points</h3>
@@ -29,7 +41,6 @@
                 </section>
                 <button onclick="addGrandPointHolder()">Add Control Point</button>
                 <button id="graph-btn">Graph</button>
-                <button id="test-btn">Test</button>
             </section>
             <section id="right-side">
                 <div class="plot-div" id="spline-canvas"></div>
@@ -43,7 +54,7 @@
             addGrandPointHolder(0, 0);
             addGrandPointHolder(1, 1);
             addGrandPointHolder(2, 1);
-            addGrandPointHolder(3, 0)
+            addGrandPointHolder(3, 0);
         </script>
     </body>
 </html>
