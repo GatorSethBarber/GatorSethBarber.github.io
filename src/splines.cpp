@@ -5,6 +5,9 @@
 
 // DANGER: This file uses unchecked accesses for speed. Does not matter if running client-side. If running server side, may want to change.
 
+// Note: Adding in constructor
+BSplineMaker::BSplineMaker() {};
+
 void BSplineMaker::setupN_ij(const vector<double>& knots, int i, int j, unordered_map<string, vector<double>>& store) {
     if (store.find(to_string(i) + "_" + to_string(j)) != store.end())
         return;
@@ -14,7 +17,7 @@ void BSplineMaker::setupN_ij(const vector<double>& knots, int i, int j, unordere
 
     if (j == 0) {
         for (double& el : newN) {
-            if (el >= knots[i] && el < knots[i+1]|| (el - knots[knots.size()]) < delta)
+            if (el >= knots[i] && el < knots[i+1]|| (el - knots[knots.size() - 1]) < delta)
                 el = 1;
             else
                 el = 0;

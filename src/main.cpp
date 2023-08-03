@@ -7,7 +7,7 @@ using namespace std;
 
 int main() {
     vector<vector<double>> cpoints{{0, 1, 2, 3}, {0, 1, 1, 0}};
-    vector<double> knots{0, 0, 0, 0, 1, 1, 1, 1};
+    vector<double> knots{0, 1, 2, 3, 4, 5, 6, 7};
     int order = 3;
 
     BSplineMaker maker;

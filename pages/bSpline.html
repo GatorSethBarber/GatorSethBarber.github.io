@@ -6,6 +6,8 @@
         <title>Bezier Splines</title>
         <link rel="stylesheet" href="../styles/splineStyles.css">
         <script src="../scripts/splines.js"></script>
+        <!--https://www.w3schools.com/js/js_graphics_plotly.asp-->
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     </head>
     <body>
         <header>
@@ -16,31 +18,32 @@
                 <h2>Specifications</h2>
                 <section>
                     <label for="degree">Degree: </label>
-                    <input id="degree" type="number" placeholder="Enter a positive integer" min="0" step="1">
+                    <input id="degree" type="number" value="3" placeholder="Enter a positive integer" min="0" step="1">
                     <br>
-                    <label for="num-sections">Number of Sections</label>
-                    <input id="num-sections" type="number" value="10" min="1" max="40">
+                    <label for="num-points">Number of Points</label>
+                    <input id="num-points" type="number" value="10" min="1" max="40">
                 </section>
                 <section id="control-points-form">
                     <h3>Control points</h3>
                     <!-- Grand point holders go here under class name grand-point-holder -->
                 </section>
                 <button onclick="addGrandPointHolder()">Add Control Point</button>
-                <button onclick="bezierSpline()">Graph Bezier Curve</button>
-                <button id="convert-button">Test</button>
+                <button id="graph-btn">Graph</button>
+                <button id="test-btn">Test</button>
             </section>
             <section id="right-side">
-                <canvas id="spline-canvas"></canvas>
-                <canvas id="curve-canvas"></canvas>
+                <div class="plot-div" id="spline-canvas"></div>
+                <div class = "plot-div" id="curve-canvas"></div>
             </section>
         </main>
         <footer></footer>
 
         <script src="../scripts/new_general_functionality.js"></script>
         <script>
-            addGrandPointHolder();
-            addGrandPointHolder();
-            addGrandPointHolder();
+            addGrandPointHolder(0, 0);
+            addGrandPointHolder(1, 1);
+            addGrandPointHolder(2, 1);
+            addGrandPointHolder(3, 0)
         </script>
     </body>
 </html>

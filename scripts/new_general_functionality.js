@@ -1,4 +1,15 @@
+// For learning more about register_vector (first 2) and potentially more elegant ways to interop with them:
+//  https://stackoverflow.com/questions/29327859/pass-pointer-to-stdvector-to-javascript-using-emscripten-and-use-it
+//  https://stackoverflow.com/questions/71681491/passing-arrays-and-objects-from-javascript-to-c-in-web-assembly
+//  https://stackoverflow.com/questions/29319208/call-c-function-pointer-from-javascript/29319440#29319440
+
+
+
+// Make the object and vector classes available globally after module is loaded
+// for convenience.
 let bsplinemaker;
+let gVecF;
+let gVecVecF;
 
 const sanitize_str_input_number = (input, is_float=false) => {
     let good = true;
@@ -24,7 +35,7 @@ const sanitize_str_input_number = (input, is_float=false) => {
     return true;
 }
 
-const createGrandPointHolder = (pointNum) => {
+const createGrandPointHolder = (pointNum, defX = 0, defY = 0) => {
     // console.log("pointNum", pointNum, pointNum.toString())
     // create outer div
     let outerDiv = document.createElement('div');
@@ -45,7 +56,7 @@ const createGrandPointHolder = (pointNum) => {
         let input = document.createElement('input');
         input.type = 'number';
         input.className = 'point';
-        input.defaultValue = 0;
+        input.defaultValue = (i == 0) ? defX : defY;
         innerDiv.appendChild(input);
     }
 
@@ -63,11 +74,11 @@ const createGrandPointHolder = (pointNum) => {
     return outerDiv
 }
 
-const addGrandPointHolder = () => {
+const addGrandPointHolder = (defX = 0, defY = 0) => {
     let cpointsForm = document.getElementById('control-points-form');
     const numChildren = cpointsForm.childElementCount;
-    // console.log(numChildren);
-    newNode = createGrandPointHolder(numChildren);
+    
+    newNode = createGrandPointHolder(numChildren, defX, defY);
     cpointsForm.appendChild(newNode);
 }
 
@@ -102,106 +113,208 @@ const removeGrandPointHolder = (number) => {
     }
 }
 
-const getPoints = () => {
-    let nodes = document.getElementsByClassName('point');
-    let values = [];
-    for (let i = 0; i < nodes.length; i += 2) {
-
-        // Better input sanitization
-        try {
-            values.push([Number(nodes[i].value), Number(nodes[i + 1].value)]);
-        }
-        catch {
-            alert("invalid input");
-            return [];
-        }
-    }
-
-    return values;
-}
-
-const bezierSpline = () => {
-    const degreeRaw = document.getElementById('degree').value;
-    const numSecsRaw = document.getElementById('num-sections').value;
-
-    // console.log("Num Sections: ", numSecsRaw)
-    // Input Sanitization!!!!
-    console.log("line 195")
-
-    if (!sanitize_str_input_number(degreeRaw) || !sanitize_str_input_number(numSecsRaw)) {
-        console.log("197", degreeRaw);
-        console.log("198", numSecsRaw);
-        return;
-    }
-
-    const degree = Number(degreeRaw);
-    const numSecs = Number(numSecsRaw);
-    let points = getPoints();
-
-    // console.log("degree: ", degree);
-    // console.log("points: ", points);
-
-    // const spline = deCasteljau(degree, points, numSecs)
-
-    // if (spline == undefined) {
-    //     return;
-    // }
-
-    // doGraphing(spline, points);
-}
-
-const splineData = [
-    {
-        // control points w/line
-        x: [],
-        y: yArray,
-        mode: "lines",
-        type: "scatter"
-    },
-    {
-        // spline w/line
-        x: [],
-        y: [],
-        type: "lines",
-        orientation: "v"
-    },
-];
-
-const cuvesData = [
-    // will be like
-    /*
-    {
-        x: [],
-        y: [],
-        mode: "lines"
-    }
-    // for each curve
-    */
-]
-
 const splineLayout = {title: "Spline"}
 const curvesLayout = {title: "Curves"}
 
+const arrIntoVecF = (arr, vec) => {
+    arr.forEach(element => {
+       vec.push_back(element); 
+    });
+}
 
-// Plotly.newPlot()
+const arrIntoVecVecF = (arr, vec) => {
+    arr.forEach(innerArr => {
+        temp = new gVecF();
+        innerArr.forEach(element => {
+            temp.push_back(element)
+        });
+        vec.push_back(temp);
+    });
+}
+
+const stringGVecF = (vec) => {
+    let useStr = "";
+    for (let i = 0; i < vec.size(); i++) {
+        useStr += vec.get(i).toString() + " ";
+    }
+    return useStr;
+}
+
+const stringVecVecF = (vec) => {
+    let useStr = "";
+    for (let i = 0; i < vec.size(); i++) {
+        useStr += stringGVecF(vec.get(i)) + "\n";
+    }
+    return useStr;
+}
+
+const plotSpline = (splineVec, cpointsVec) => {
+    const splineGraphData = [
+        {
+            // control points w/line
+            x: [],
+            y: [],
+            mode: "lines",
+            type: "scatter"
+        },
+        {
+            // spline w/line
+            x: [],
+            y: [],
+            mode: "lines",
+            type: "scatter"
+        },
+    ];
+
+    // Dump cpoints
+    for (let i = 0; i < cpointsVec.get(0).size(); i++) {
+        splineGraphData[0].x.push(cpointsVec.get(0).get(i));
+        splineGraphData[0].y.push(cpointsVec.get(1).get(i));
+    }
+
+    // Dump spline line
+    for (let i = 0; i < splineVec.get(0).size(); i++) {
+        splineGraphData[1].x.push(splineVec.get(0).get(i));
+        splineGraphData[1].y.push(splineVec.get(1).get(i));
+    }
+
+    Plotly.newPlot(document.getElementById('spline-canvas'), splineGraphData, splineLayout);
+
+}
+
+const plotCurves = (tVec, curveVec) => {
+    const curvesData = [];
+    let x = [];
+    for (let i = 0; i < tVec.size(); i++) {
+        x.push(tVec.get(i));
+    }
+
+    for (let i = 0; i < curveVec.size(); i++) {
+        newObj = {x: x, y: [], mode: "lines"}
+        for (let j = 0; j < curveVec.get(i).size(); j++) {
+            newObj.y.push(curveVec.get(i).get(j))
+        }
+        curvesData.push(newObj);
+    }
+
+    Plotly.newPlot(document.getElementById('curve-canvas'), curvesData, curvesLayout);
+}
+
+const getNumPoints = () => {
+    const rawNumPoints = document.getElementById('num-points').value.toString();
+    if (rawNumPoints.length == 0) {
+        alert("Please enter a number for the number of points.");
+        return;
+    }
+    return Number(rawNumPoints);
+}
+
+const getOrder = () => {
+    const rawOrder = document.getElementById('degree').value.toString();
+    if (rawOrder.length == 0) {
+        alert("Please enter a number for degree.");
+        return;
+    }
+    return Number(rawOrder);
+}
+
+const getCPointsVecVecF = () => {
+    // Get cpoints
+    const rawPoints = document.getElementsByClassName('point')
+    const cpoints = new gVecVecF();
+    const xVec = new gVecF();
+    const yVec = new gVecF();
+    for (let i = 0; i < rawPoints.length; i++) {
+        if (rawPoints[i].toString().length == 0) {
+            alert("Invalid or missing value for control point.");
+            return;
+        }
+        if (i % 2 == 0) {
+            xVec.push_back(Number(rawPoints[i]))
+        } else {
+            yVec.push_back(Number(rawPoints[i]));
+        }
+    }
+    cpoints.push_back(xVec);
+    cpoints.push_back(yVec);
+
+    return cpoints;
+}
+
+
+const calcAndGraphBSpline = () => {
+    const numPoints = getNumPoints();
+    const order = getOrder();
+    const cpointsVec = getCPointsVecVecF();
+
+    // Get knots
+    // Currently, will just make it a uniform B-spline
+    const numKnots = cpointsVec.get(0).size() + order + 1;
+    const knots = new gVecF();
+    for (let i = 0; i < numKnots; i++) {
+        knots.push_back(i);
+    }
+
+    try {
+        bsplinemaker.makeBSpline(cpointsVec, knots, order, numPoints);
+    } catch (error) {
+        alert("Error encountered.");
+        console.log(error);
+        return;
+    }
+
+    const tVec = bsplinemaker.getT();
+    const splineVec = bsplinemaker.getSpline();
+    const curvesVec = bsplinemaker.getCurves();
+
+    plotSpline(splineVec, cpointsVec);
+    plotCurves(tVec, curvesVec);
+
+}
 
 // Based on https://github.com/GatorSethBarber/COP3530Project3/blob/a9aa02985a29c6f5fde027e427496f2067e0bcf1/webpages/questionnaire.html
-createModule().then(({BSplineMaker}) => {
-    console.log("Loaded!")
-    const knots = [0, 0, 0, 0, 1, 1, 1, 1]
-    const cpoints = [[0, 1, 2, 3], [0, 1, 1, 0]]
-    const order = 3;
-    const numPoints = 10;
-
-    bsplinemaker.makeBSpline(cpoints, knots, order, numPoints);
-    console.log("t",  bsplinemaker.getT());
-    console.log("spline", bsplinemaker.getSpline());
-    console.log("curves", bsplinemaker.getCurves());
-    
-    // hoist converter
+createModule().then(({BSplineMaker, VecF, VecVecF}) => {
     bsplinemaker = new BSplineMaker();
-    const cvtBtn = document.getElementById('convert-button');
-    cvtBtn.addEventListener('click', () => {
-        return;
+    gVecF = VecF;
+    gVecVecF = VecVecF;
+
+    // alert("Ready for use.")
+
+    document.getElementById('graph-btn').addEventListener('click', () => {
+        calcAndGraphBSpline();
     })
+
+    const testBtn = document.getElementById("test-btn");
+    testBtn.addEventListener('click', () => {
+        const knots = new VecF();
+        arrIntoVecF([1, 2, 3, 4, 5, 6, 7, 8], knots);
+        console.log(knots);
+        console.log("knots: ", stringGVecF(knots));
+
+        const cpoints = new VecVecF();
+        arrIntoVecVecF([[0, 1, 2, 3], [0, 1, 1, 0]], cpoints);
+        console.log(typeof(cpoints.get(0)))
+
+        const order = 3;
+        const numPoints = 10;
+
+        try {
+            bsplinemaker.makeBSpline(cpoints, knots, order, numPoints);
+        } catch (error) {
+            alert("Error encountered.");
+            return;
+        }
+
+        const t = bsplinemaker.getT();
+        const spline = bsplinemaker.getSpline();
+        const curves = bsplinemaker.getCurves();
+        console.log("t",  stringGVecF(t));
+        console.log("spline\n", stringVecVecF(spline));
+        console.log("curves\n", stringVecVecF(curves));
+
+        plotCurves(t, curves);
+        plotSpline(spline, cpoints);
+    });
+    
+    
 }).catch(console.log)

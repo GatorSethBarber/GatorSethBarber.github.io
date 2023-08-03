@@ -9,7 +9,7 @@
 
 using namespace emscripten;
 EMSCRIPTEN_BINDINGS(Converter) {
-    class_<BSplineMaker>("Converter")
+    class_<BSplineMaker>("BSplineMaker")
         .constructor<>()
         .function("makeBSpline", &BSplineMaker::makeBSpline)
         .function("getT", &BSplineMaker::getT)
@@ -17,6 +17,6 @@ EMSCRIPTEN_BINDINGS(Converter) {
         .function("getSpline", &BSplineMaker::getSpline)
         ;
     
-    register_vector<double>("vector<double>");
-    register_vector<vector<double>>("vector<vector<double>>");
+    register_vector<double>("VecF");
+    register_vector<vector<double>>("VecVecF");
 }
