@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8">
         <title>B-Splines</title>
-        <link rel="stylesheet" href="../styles/splineStyles.css">
+        <link rel="stylesheet" href="../styles/newSplineStyles.css">
         <script src="../scripts/splines.js"></script>
         <!--https://www.w3schools.com/js/js_graphics_plotly.asp-->
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -33,6 +33,17 @@
                     <div>
                         <input type="radio" id="zero-and-one" name="knot-seq-type" value="zero-and-one" class="r-btn" />
                         <label for="zero-and-one">..., 0, 1, ...</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="custom" name="knot-seq-type" value="custom" class="r-btn" />
+                        <label for="user">Custom</label>
+                        <div id="knot-list">
+                            <input type="number" class="knot-input">
+                            <input type="number" class="knot-input">
+                            <input type="number" class="knot-input">
+                            <input type="number" class="knot-input">
+                            <button>+</button>
+                        </div>
                     </div>
                 </section>
                 <section id="control-points-form">

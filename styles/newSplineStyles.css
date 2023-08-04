@@ -44,7 +44,7 @@ main > section {
 }
 
 /* copied from Hotelogy project*/
-.plot-div {
+/* .plot-div {
     display:block;
     border: 1px solid black;
     min-width: 250px;
@@ -53,4 +53,8 @@ main > section {
     padding: 0px;
     background-color: white;
 
+} */
+
+.knot-input {
+    width: 5ch;
 }

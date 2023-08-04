@@ -3,7 +3,11 @@
 //  https://stackoverflow.com/questions/71681491/passing-arrays-and-objects-from-javascript-to-c-in-web-assembly
 //  https://stackoverflow.com/questions/29319208/call-c-function-pointer-from-javascript/29319440#29319440
 
+// Plotly originally based off of: https://www.w3schools.com/js/js_graphics_plotly.asp
 // Trace names for plotly: https://plotly.com/javascript/line-charts/
+// For layout for plotly: https://plotly.com/javascript/layout-template/
+// More annotation: https://plotly.com/javascript/text-and-annotations/
+// About subtitle: https://github.com/plotly/plotly.js/issues/233, particularly the post by peteristhegreat.
 
 
 // Make the object and vector classes available globally after module is loaded
@@ -11,30 +15,6 @@
 let bsplinemaker;
 let gVecF;
 let gVecVecF;
-
-const sanitize_str_input_number = (input, is_float=false) => {
-    let good = true;
-    if (input.length === undefined || input.length === 0) {
-        good = false;
-    }
-    try {
-        for (let i = 0; i < input.length; i++) {
-            use_str = is_float ? "1234567890." : "1234567890";
-            if (use_str.indexOf(input[i]) == -1) {
-                console.log(input[i])
-                good = false;
-                break;
-            }
-        }
-    } catch {}
-
-    if (!good) {
-        alert("Invalid input");
-        return false;
-    }
-
-    return true;
-}
 
 const createGrandPointHolder = (pointNum, defX = 0, defY = 0) => {
     // console.log("pointNum", pointNum, pointNum.toString())
@@ -56,7 +36,7 @@ const createGrandPointHolder = (pointNum, defX = 0, defY = 0) => {
     for (let i = 0; i < 2; i++) {
         let input = document.createElement('input');
         input.type = 'number';
-        input.className = 'point';
+        input.className = 'point-input';
         input.defaultValue = (i == 0) ? defX : defY;
         innerDiv.appendChild(input);
     }
@@ -114,9 +94,6 @@ const removeGrandPointHolder = (number) => {
     }
 }
 
-const splineLayout = {title: "Spline"}
-const curvesLayout = {title: "Curves"}
-
 const arrIntoVecF = (arr, vec) => {
     arr.forEach(element => {
        vec.push_back(element); 
@@ -135,9 +112,11 @@ const arrIntoVecVecF = (arr, vec) => {
 
 const stringGVecF = (vec) => {
     let useStr = "";
-    for (let i = 0; i < vec.size(); i++) {
-        useStr += vec.get(i).toString() + " ";
+    for (let i = 0; i < vec.size() - 1; i++) {
+        useStr += vec.get(i).toString() + ", ";
     }
+    if (vec.size() > 0)
+        useStr += vec.get(vec.size() - 1).toString();
     return useStr;
 }
 
@@ -149,13 +128,13 @@ const stringVecVecF = (vec) => {
     return useStr;
 }
 
-const plotSpline = (splineVec, cpointsVec, order) => {
+const plotSpline = (cpointsVec, splineVec, subtitle) => {
     const splineGraphData = [
         {
             // control points w/line
             x: [],
             y: [],
-            mode: "lines",
+            mode: "markers+lines",
             type: "scatter",
             name: "Control Polygon"
         },
@@ -165,9 +144,11 @@ const plotSpline = (splineVec, cpointsVec, order) => {
             y: [],
             mode: "lines",
             type: "scatter",
-            name: "Spline of Order " + order.toString()
+            name: "Spline"
         },
     ];
+
+    const splineLayout = {title: "Spline<br>" + subtitle}
 
     // Dump cpoints
     for (let i = 0; i < cpointsVec.get(0).size(); i++) {
@@ -185,7 +166,7 @@ const plotSpline = (splineVec, cpointsVec, order) => {
 
 }
 
-const plotCurves = (tVec, curveVec, order) => {
+const plotCurves = (tVec, curveVec, subtitle) => {
     const curvesData = [];
     let x = [];
     for (let i = 0; i < tVec.size(); i++) {
@@ -199,6 +180,11 @@ const plotCurves = (tVec, curveVec, order) => {
         }
         curvesData.push(newObj);
     }
+
+    
+    const curvesLayout = {
+        title: "Curves<br>" + subtitle, 
+    };
 
     Plotly.newPlot(document.getElementById('curve-canvas'), curvesData, curvesLayout);
 }
@@ -233,7 +219,8 @@ const getKnotType = () => {
 
 const getCPointsVecVecF = () => {
     // Get cpoints
-    const rawPoints = document.getElementsByClassName('point')
+    const rawPoints = document.getElementsByClassName('point-input')
+    // console.log(rawPoints);
     const cpoints = new gVecVecF();
     const xVec = new gVecF();
     const yVec = new gVecF();
@@ -266,6 +253,10 @@ const calcAndGraphBSpline = () => {
     // Get knots
     // Currently, will just make it a uniform B-spline
     const numKnots = cpointsVec.get(0).size() + order + 1;
+    // console.log("numKnots: ", numKnots)
+    // console.log("order: ", order)
+    // console.log("numCpoints: ", cpointsVec.get(0).size())
+    
     const knots = new gVecF();
     const knotType = getKnotType();
     for (let i = 0; i < numKnots; i++) {
@@ -291,8 +282,10 @@ const calcAndGraphBSpline = () => {
     const splineVec = bsplinemaker.getSpline();
     const curvesVec = bsplinemaker.getCurves();
 
-    plotSpline(cpointsVec, splineVec, order);
-    plotCurves(tVec, curvesVec);
+    const subtitle = "<em style=\"font-size:0.75rem\">Order: " + order.toString() + ", t: [" + stringGVecF(knots) + "]</em>";
+
+    plotSpline(cpointsVec, splineVec, subtitle);
+    plotCurves(tVec, curvesVec, subtitle);
 
 }
 
@@ -307,4 +300,4 @@ createModule().then(({BSplineMaker, VecF, VecVecF}) => {
     document.getElementById('graph-btn').addEventListener('click', () => {
         calcAndGraphBSpline();
     });  
-}).catch(console.log)
+}).catch(error => {alert("Error in loading converter."); console.log(error)})
