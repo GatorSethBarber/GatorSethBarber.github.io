@@ -55,6 +55,10 @@ main > section {
 
 } */
 
-.knot-input {
+/* .knot-input {
     width: 5ch;
+} */
+
+#custom-knot-input {
+    width: 50ch;
 }

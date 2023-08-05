@@ -8,6 +8,8 @@
 // For layout for plotly: https://plotly.com/javascript/layout-template/
 // More annotation: https://plotly.com/javascript/text-and-annotations/
 // About subtitle: https://github.com/plotly/plotly.js/issues/233, particularly the post by peteristhegreat.
+// For handling NaN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN
+//   (see also: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/NaN)
 
 
 // Make the object and vector classes available globally after module is loaded
@@ -217,6 +219,28 @@ const getKnotType = () => {
     return "";
 }
 
+const getCustomKnotVec = () => {
+    const rawSplitData = document.getElementById("custom-knot-input").value.split(",");
+    let knotVec = new gVecF();
+
+    let temp;
+    for (let i = 0; i < rawSplitData.length; i++) {
+        try {
+            temp = Number(rawSplitData[i]);
+            if (Number.isNaN(temp) || rawSplitData[i].trim() === "") {
+                throw Error();
+            }
+        } catch (error) {
+            alert("Knot '" + rawSplitData[i] + "' cannot be interpreted as a number.")
+            return;
+        }
+        // console.log(temp, typeof(temp));
+        knotVec.push_back(temp);
+    }
+
+    return knotVec;
+}
+
 const getCPointsVecVecF = () => {
     // Get cpoints
     const rawPoints = document.getElementsByClassName('point-input')
@@ -257,16 +281,27 @@ const calcAndGraphBSpline = () => {
     // console.log("order: ", order)
     // console.log("numCpoints: ", cpointsVec.get(0).size())
     
-    const knots = new gVecF();
+    let knots = new gVecF();
     const knotType = getKnotType();
-    for (let i = 0; i < numKnots; i++) {
-        if (knotType === "natural") {
-            knots.push_back(i);
-        } else {
-            if (i < numKnots / 2)
-                knots.push_back(0);
-            else
-                knots.push_back(1);
+    if (knotType === "custom") {
+        knots = getCustomKnotVec();
+        if (knots === undefined) return;
+        if (knots.size() !== numKnots) {
+            alert("Expecting " + numKnots.toString() + " knots, not " + knots.size().toString() + ".");
+            return;
+        }
+    }
+
+    else {
+        for (let i = 0; i < numKnots; i++) {
+            if (knotType === "natural") {
+                knots.push_back(i);
+            } else {
+                if (i < numKnots / 2)
+                    knots.push_back(0);
+                else
+                    knots.push_back(1);
+            }
         }
     }
 
