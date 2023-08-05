@@ -1,0 +1,64 @@
+:root {
+    --header-height: 120px;
+    --footer-height: 50px;
+    --main-padding: 10px;
+}
+
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+header {
+    background-color:aquamarine;
+    text-align: center;
+    height: var(--header-height);
+    margin:0;
+    padding:0;
+}
+
+footer {
+    background-color:gray;
+    height:var(--footer-height);
+}
+
+header > h1 {
+    display: inline-block;
+}
+
+/*https://stackoverflow.com/questions/44153866/how-can-i-get-the-height-of-an-element-using-css-only*/
+/*2nd answer*/
+main {
+    width: 80%;
+    margin: 0px auto;
+    padding: var(--main-padding) 10px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    overflow: auto;
+    min-height: calc(100vh - var(--header-height) - var(--footer-height) - 2 * var(--main-padding));
+    background-color: whitesmoke;
+}
+
+main > section {
+    height:100%;
+}
+
+/* copied from Hotelogy project*/
+/* .plot-div {
+    display:block;
+    border: 1px solid black;
+    min-width: 250px;
+    min-height: 500px;
+    width:100%;
+    padding: 0px;
+    background-color: white;
+
+} */
+
+/* .knot-input {
+    width: 5ch;
+} */
+
+#custom-knot-input {
+    width: 50ch;
+}
