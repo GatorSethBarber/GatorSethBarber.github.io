@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #include "splines.hpp"
 
 using namespace std;
@@ -8,7 +9,9 @@ using namespace std;
 int main() {
     vector<vector<double>> cpoints{{0, 1, 2, 3}, {0, 1, 1, 0}};
     vector<double> knots{0, 1, 2, 3, 4, 5, 6, 7};
-    int order = 3;
+    cout << "Max of knots: " << *max_element(knots.begin(), knots.end()) << endl;
+    cout << "Min of knots: " << *min_element(knots.begin(), knots.end()) << endl;
+     int order = 3;
 
     BSplineMaker maker;
     maker.makeBSpline(cpoints, knots, order, 10);

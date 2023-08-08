@@ -1,5 +1,6 @@
 #include "splines.hpp"
 #include <cmath>
+#include <algorithm>
 // #include <iostream>
 
 // For proper library to use abs: https://en.cppreference.com/w/cpp/numeric/math/abs
@@ -46,9 +47,16 @@ void BSplineMaker::setupN_ij(const vector<double>& knots, int i, int j, unordere
 void BSplineMaker::makeBSplineCurves(const vector<double>& knots, int order, int numPoints) {
     t = vector<double>(numPoints);
 
-    // Eventually, these can be replaced by getting max and min over certain region
-    double max = knots[knots.size() - order - 1];
-    double min = knots[order];
+    // Sanity check: check size.
+    if (knots.size() < order * 2) 
+        return;
+    
+    // Use algorithm so can accept unordered knot sequences
+    double max = *max_element(knots.begin() + order, knots.end() - order);  // knots[knots.size() - order - 1];
+    double min = *min_element(knots.begin() + order, knots.end() - order);  // knots[order];
+    
+    // cout << "Max: " << max << endl;
+    // cout << "MIn: " << min << endl;
     double multiplier = (max - min) / (numPoints - 1);
 
     for (int i = 0; i < numPoints; i++) {
