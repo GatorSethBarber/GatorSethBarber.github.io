@@ -19,15 +19,15 @@
 ## EXAMPLE PUBLIC PROJECTS
 
 ### Bezier Splines
-* ![Webpage link](https://gatorsethbarber.github.io/pages/bezier)
+* <a href="https://gatorsethbarber.github.io/pages/bezier">Webpage link</a>
 * Uses pure HTML/CSS/JS to graph univariate Bezier spline curves
 
 ### B-Splines
-* ![Webpage link](https://gatorsethbarber.github.io/pages/bSpline.html)
+* <a href="https://gatorsethbarber.github.io/pages/bSpline.html">Webpage link</a>
 * Uses WebAssembly and HTML/CSS/JS to graph univariate B-spline curves
 
 ### Python and C++ Integration
-* ![GitHub Repo](https://github.com/GatorSethBarber/PythonCPPExample)
+* <a href="https://github.com/GatorSethBarber/PythonCPPExample">GitHub Repo</a>
 * Demonstrates three ways to integrate C++ into Python on Windows via MinGW and on Linux via make/cmake:
   * Python's built-in ![`ctypes`](https://docs.python.org/3/library/ctypes.html) library
   * ![SWIG](https://www.swig.org/)
