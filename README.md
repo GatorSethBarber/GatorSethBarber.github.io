@@ -48,9 +48,9 @@
 ### Python and C++ Integration
 * <a href="https://github.com/GatorSethBarber/PythonCPPExample">GitHub Repo</a>
 * Demonstrates three ways to integrate C++ into Python on Windows via MinGW and on Linux via make/cmake:
-  * Python's built-in ![`ctypes`](https://docs.python.org/3/library/ctypes.html) library
-  * ![SWIG](https://www.swig.org/)
-  * ![pybind11](https://github.com/pybind/pybind11)
+  * Python's built-in [`ctypes`](https://docs.python.org/3/library/ctypes.html) library
+  * [SWIG](https://www.swig.org/)
+  * [pybind11](https://github.com/pybind/pybind11)
 
 ## CERTIFICATES AND MEMBERSHIP
 
