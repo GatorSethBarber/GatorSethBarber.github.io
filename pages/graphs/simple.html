@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script src=https://cise.ufl.edu/~barber.seth/media/cytoscape-edgehandles.js></script>
 <script src=https://cise.ufl.edu/~barber.seth/media/cytoscape-undo-redo.js></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 </head>
 <body>
@@ -119,6 +120,41 @@
             theme: 'ayu-mirage',
             styleActiveLine: true
         });
+    </script>
+    <script>
+        // Listen for messages from Qualtrics
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'requestScreenshot') {
+                try {
+                    var cyContainer = document.getElementById('cy');
+                    
+                    html2canvas(cyContainer, {
+                        scale: 2,
+                        backgroundColor: '#ffffff'
+                    }).then(function(canvas) {
+                        window.parent.postMessage({
+                            type: 'screenshotData',
+                            data: canvas.toDataURL('image/png')
+                        }, '*');
+                    }).catch(function(error) {
+                        window.parent.postMessage({
+                            type: 'screenshotError',
+                            error: error.message
+                        }, '*');
+                    });
+                } catch(e) {
+                    window.parent.postMessage({
+                        type: 'screenshotError',
+                        error: e.message
+                    }, '*');
+                }
+            }
+        });
+        
+        // Notify parent that iframe is ready
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'iframeReady' }, '*');
+        }
     </script>
 </body>
 </html>
