@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.css">
+<link rel="stylesheet" href="https://cise.ufl.edu/~barber.seth/media/ayu-mirage.css">
+<link href="https://cise.ufl.edu/~barber.seth/media/styles.css" rel="stylesheet">
+<title>Webview</title>
+<script src=https://cise.ufl.edu/~barber.seth/media/cytoscape.min.js></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src=https://cise.ufl.edu/~barber.seth/media/cytoscape-edgehandles.js></script>
+<script src=https://cise.ufl.edu/~barber.seth/media/cytoscape-undo-redo.js></script>
+
+</head>
+<body>
+    <header>
+    <div class="align-center">
+        <button class="modern-button" id="help-button">?</button>
+        <button class="modern-button" id="edit-source">Write to testHighDegree.blu</button>
+        <button class="delete-button" id="delete-element">Delete Selected Element</button>
+        <button class="modern-button" id="undo-btn">Undo</button>
+        <button class="modern-button" id="redo-btn">Redo</button>
+        <label class="switch-container">
+            <span class="switch">
+                <input type="checkbox" id="draw-switch">
+                <span class="slider"></span>
+            </span>
+            <span class="switch-text">Draw Mode</span>
+        </label>
+        <label class="switch-container">
+            <span class="switch">
+                <input type="checkbox" id="path-toggle">
+                <span class="slider"></span>
+            </span>
+            <span class="switch-text">Path Highlight</span>
+        </label>
+        <label class="switch-container">
+            <span class="switch">
+                <input type="checkbox" id="err-toggle">
+                <span class="slider"></span>
+            </span>
+            <span class="switch-text">Error</span>
+        </label>
+        <select id="layout-selector">
+            <option value="cose">Layout: CoSE (Default)</option>
+            <option value="grid">Layout: Grid</option>
+            <option value="circle">Layout: Circle</option>
+            <option value="concentric">Layout: Concentric</option>
+            <option value="breadthfirst">Layout: Breadth First</option>
+            <option value="dagre">Layout: Dagre (Hierarchical)</option>
+        </select>
+    </div>
+    </header>
+    <div id="cy"></div>
+    <div id="errorWindow" class="selector">
+        <div id="loop-error", class="error-warning-item error-error-warning-item" style="display:none;">
+            <span>Detected loops</span>
+        </div>
+        <div id ="race-warning" class="error-warning-item warning-error-warning-item" style="display:none;">
+            <span>Detected race condition</span>
+        </div>
+    </div>
+    <div class="selector">
+        <p>Click and drag to add tasks</p>
+        <div id="task-menu"></div>
+    </div>
+<div class="selector">
+    <div> 
+        <p>Click and drag to add devices</p>
+        <button class="modern-button" id="add-device">Add Device</button>
+        <div id="device-menu"></div>
+    </div>
+    <div id="info">
+        <form class="validated-form" id="device-setup-form">
+            <button class="delete-button" id="remove-device">Remove Device</button>
+            <label for="setDevice">Device Type: </label>
+            <select id = "setDevice" name="devtype"></select>
+
+            <label for="devname">Device ID: </label>
+            <input type="text" id="devname" name="devname" required>
+
+
+            <label for="Controller">Controller: </label>
+            <input type="text" id="Controller" name="controller" required>
+
+            <div id="device-parameters"></div>
+            
+            <button type="submit">Add Device</button>
+        </form>
+        <div id="code-text" style="display:none">
+            <h1 id="code-area-label">Task Definition</h1>
+            <textarea id="code-textarea" readonly>int abc = 123;</textarea>
+        </div>
+    </div>
+</div>
+    <script>
+        window.graphElements = [{"group":"nodes","data":{"id":"moreFiles%0","label":"moreFiles","ignoreWriteBacks":[],"icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"position":{"x":300,"y":66.66666666666667},"classes":"task"},{"group":"nodes","data":{"id":"file1","label":"file1","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file3","label":"file3","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file2","label":"file2","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file4","label":"file4","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file5","label":"file5","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"data":{"id":"edge0","source":"file1","target":"moreFiles%0","targAlias":"lw1","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge1","source":"file4","target":"moreFiles%0","targAlias":"lw4","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge2","source":"file2","target":"moreFiles%0","targAlias":"lw3","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge3","source":"moreFiles%0","target":"file5","targAlias":"lw5","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"edge4","source":"moreFiles%0","target":"file2","targAlias":"lw3","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"edge5","source":"moreFiles%0","target":"file3","targAlias":"lw2","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"triggerEdge6","source":"file1","target":"moreFiles%0","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"trigger"},{"data":{"id":"triggerEdge7","source":"file4","target":"moreFiles%0","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"trigger"},{"group":"nodes","data":{"id":"someFiles%1","label":"someFiles","ignoreWriteBacks":[],"icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"position":{"x":300,"y":200},"classes":"task"},{"group":"nodes","data":{"id":"file1","label":"file1","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file2","label":"file2","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file3","label":"file3","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"group":"nodes","data":{"id":"file4","label":"file4","kind":10,"icon":"https://cise.ufl.edu/~barber.seth/images/file_icon.svg"},"position":{"x":150,"y":133.33333333333334},"classes":"device"},{"data":{"id":"edge8","source":"file1","target":"someFiles%1","targAlias":"lw1","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge9","source":"file2","target":"someFiles%1","targAlias":"lw2","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge10","source":"someFiles%1","target":"file4","targAlias":"lw4","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"edge11","source":"someFiles%1","target":"file3","targAlias":"lw3","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"triggerEdge12","source":"file1","target":"someFiles%1","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"trigger"}];
+        window.taskToSrc = {"someFiles":"{<br>    file3.msg = \"written\" + file2.msg; <br>    file4.msg = \"written\" + file1.msg;<br>}","moreFiles":"{<br>    file3.msg = \"written\" + file2.msg; <br>    file2.msg = \"written\" + file4.msg;<br>    file5.msg = file1.msg;<br>}"};
+        window.taskMap = {"moreFiles":"{\"taskDesc\":{\"name\":\"moreFiles\",\"binded_devices\":[{\"device_name\":\"file1\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file1.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file3\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file3.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file2\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file2.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file4\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file4.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file5\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file5.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1}],\"bytecode_offset\":23,\"inDevices\":[\"file1\",\"file4\",\"file2\"],\"outDevices\":[\"file5\",\"file2\",\"file3\"],\"hostController\":\"ctl\",\"triggers\":[{\"rule\":[\"file1\"],\"id\":\"\",\"priority\":1},{\"rule\":[\"file4\"],\"id\":\"\",\"priority\":1}]},\"inAlias\":[{\"name\":\"lw1\",\"type\":10},{\"name\":\"lw4\",\"type\":10},{\"name\":\"lw3\",\"type\":10}],\"outAlias\":[{\"name\":\"lw5\",\"type\":10},{\"name\":\"lw3\",\"type\":10},{\"name\":\"lw2\",\"type\":10}],\"triggerAlias\":[[{\"name\":\"lw1\",\"type\":10}],[{\"name\":\"lw4\",\"type\":10}]]}","someFiles":"{\"taskDesc\":{\"name\":\"someFiles\",\"binded_devices\":[{\"device_name\":\"file1\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file1.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file2\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file2.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file3\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file3.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"file4\",\"type\":10,\"controller\":\"ctl\",\"port_maps\":{\"file\":\"file4.txt\"},\"initialValue\":{\"msg\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1}],\"bytecode_offset\":0,\"inDevices\":[\"file1\",\"file2\"],\"outDevices\":[\"file4\",\"file3\"],\"hostController\":\"ctl\",\"triggers\":[{\"rule\":[\"file1\"],\"id\":\"\",\"priority\":1}]},\"inAlias\":[{\"name\":\"lw1\",\"type\":10},{\"name\":\"lw2\",\"type\":10}],\"outAlias\":[{\"name\":\"lw4\",\"type\":10},{\"name\":\"lw3\",\"type\":10}],\"triggerAlias\":[[{\"name\":\"lw1\",\"type\":10}]]}"}; 
+        window.iconURIs = ["https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/bool_icon.svg","https://cise.ufl.edu/~barber.seth/images/int_icon.svg","https://cise.ufl.edu/~barber.seth/images/float_icon.svg","https://cise.ufl.edu/~barber.seth/images/string_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/list_icon.svg","https://cise.ufl.edu/~barber.seth/images/map_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/file_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/file_log_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/led_icon.svg","https://cise.ufl.edu/~barber.seth/images/pwm_led_icon.svg","https://cise.ufl.edu/~barber.seth/images/rgb_led_icon.svg","https://cise.ufl.edu/~barber.seth/images/button_icon.svg","https://cise.ufl.edu/~barber.seth/images/active_buzzer_icon.svg","https://cise.ufl.edu/~barber.seth/images/passive_buzzer_icon.svg","https://cise.ufl.edu/~barber.seth/images/potentiometer_icon.svg","https://cise.ufl.edu/~barber.seth/images/photoresistor_icon.svg","https://cise.ufl.edu/~barber.seth/images/thermistor_icon.svg","https://cise.ufl.edu/~barber.seth/images/thumb_joystick_icon.svg","https://cise.ufl.edu/~barber.seth/images/servo_icon.svg","https://cise.ufl.edu/~barber.seth/images/dc_motor_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/lcd_display_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/keyboard_icon.svg","https://cise.ufl.edu/~barber.seth/images/mouse_icon.svg","https://cise.ufl.edu/~barber.seth/images/gamepad_icon.svg","https://cise.ufl.edu/~barber.seth/images/website_icon.svg","https://cise.ufl.edu/~barber.seth/images/write_file_icon.svg","https://cise.ufl.edu/~barber.seth/images/audio_player_icon.svg"]; 
+        window.devtypeArray = ["NA","NA","NA","NA","NA","NA","NA","NA","NA","TIMER_TEST","LINE_WRITER","READ_FILE","FILE_LOG","READ_FILE_POLL","LIGHT","PWM_LED","RGB_LED","BUTTON","ACTIVE_BUZZER","PASSIVE_BUZZER","POTENTIOMETER","PHOTORESISTOR","THERMISTOR","FN_JOYSTICK","FN_SERVO","DC_MOTOR","STEP_MOTOR","DHT11","LCD_SCREEN","MOTION_SENSOR","ULTRASONIC","KEYBOARD","MOUSE","GAMEPAD","HTTP_ENDPOINT","TEXT_FILE","AUDIO_PLAYER"]; 
+        window.devtypeParams = {"LIGHT":[{"param":"PIN","type":"number","range":[0,26]}],"BUTTON":[{"param":"PIN","type":"number","range":[0,26]}],"LINE_WRITER":[{"param":"file","type":"string"}],"FILE_LOG":[{"param":"file","type":"string"}],"KEYBOARD":[{"param":"mode","type":"multiple-choice","choices":["any","all"]}],"HTTP_ENDPOINT":[{"param":"endpoint","type":"string"}],"POTENTIOMETER":[{"param":"ADC_CHANNEL","type":"multiple-choice","choices":[0,1]}],"RGB_LED":[{"param":"BLUE_PIN","type":"number"},{"param":"GREEN_PIN","type":"number"},{"param":"RED_PIN","type":"number"}],"AUDIO_PLAYER":[{"param":"directory","type":"string"}],"MOUSE":[{"param":"mode","type":"multiple-choice","choices":["all","any"]},{"param":"cooldown","type":"number"}],"GAMEPAD":[{"param":"mode","type":"multiple-choice","choices":["automatic","manual"]}]}; 
+        window.originalCodesMap = {"someFiles":"task someFiles(LINE_WRITER lw1, LINE_WRITER lw2, LINE_WRITER lw3, LINE_WRITER lw4)\n: triggerOn(lw1)\n{\n    lw3.msg = \"written\" + lw2.msg; \n    lw4.msg = \"written\" + lw1.msg;\n}","moreFiles":"task moreFiles(LINE_WRITER lw1, LINE_WRITER lw2, LINE_WRITER lw3, LINE_WRITER lw4, LINE_WRITER lw5)\n: triggerOn(lw1, lw4)\n{\n    lw2.msg = \"written\" + lw3.msg; \n    lw3.msg = \"written\" + lw4.msg;\n    lw5.msg = lw1.msg;\n}"};
+    </script>
+    <script src="https://cise.ufl.edu/~barber.seth/scripts/webview.js"></script>
+    <script src="https://cise.ufl.edu/~barber.seth/scripts/helpScript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.js"></script>
+    <srcipt src="https://cise.ufl.edu/~barber.seth/scripts/custom-clike.js"</script>
+    <script>
+        let editor = CodeMirror.fromTextArea(document.getElementById('code-textarea'), {
+            lineNumbers: true,
+            // mode: 'text/x-scala',
+            mode: "text/x-c++src",
+            theme: 'ayu-mirage',
+            styleActiveLine: true
+        });
+    </script>
+</body>
+</html>

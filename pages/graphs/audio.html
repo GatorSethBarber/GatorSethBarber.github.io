@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.css">
+<link rel="stylesheet" href="https://cise.ufl.edu/~barber.seth/media/ayu-mirage.css">
+<link href="https://cise.ufl.edu/~barber.seth/media/styles.css" rel="stylesheet">
+<title>Webview</title>
+<script src=https://cise.ufl.edu/~barber.seth/media/cytoscape.min.js></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src=https://cise.ufl.edu/~barber.seth/media/cytoscape-edgehandles.js></script>
+<script src=https://cise.ufl.edu/~barber.seth/media/cytoscape-undo-redo.js></script>
+
+</head>
+<body>
+    <header>
+    <div class="align-center">
+        <button class="modern-button" id="help-button">?</button>
+        <button class="modern-button" id="edit-source">Write to audio.blu</button>
+        <button class="delete-button" id="delete-element">Delete Selected Element</button>
+        <button class="modern-button" id="undo-btn">Undo</button>
+        <button class="modern-button" id="redo-btn">Redo</button>
+        <label class="switch-container">
+            <span class="switch">
+                <input type="checkbox" id="draw-switch">
+                <span class="slider"></span>
+            </span>
+            <span class="switch-text">Draw Mode</span>
+        </label>
+        <label class="switch-container">
+            <span class="switch">
+                <input type="checkbox" id="path-toggle">
+                <span class="slider"></span>
+            </span>
+            <span class="switch-text">Path Highlight</span>
+        </label>
+        <label class="switch-container">
+            <span class="switch">
+                <input type="checkbox" id="err-toggle">
+                <span class="slider"></span>
+            </span>
+            <span class="switch-text">Error</span>
+        </label>
+        <select id="layout-selector">
+            <option value="cose">Layout: CoSE (Default)</option>
+            <option value="grid">Layout: Grid</option>
+            <option value="circle">Layout: Circle</option>
+            <option value="concentric">Layout: Concentric</option>
+            <option value="breadthfirst">Layout: Breadth First</option>
+            <option value="dagre">Layout: Dagre (Hierarchical)</option>
+        </select>
+    </div>
+    </header>
+    <div id="cy"></div>
+    <div id="errorWindow" class="selector">
+        <div id="loop-error", class="error-warning-item error-error-warning-item" style="display:none;">
+            <span>Detected loops</span>
+        </div>
+        <div id ="race-warning" class="error-warning-item warning-error-warning-item" style="display:none;">
+            <span>Detected race condition</span>
+        </div>
+    </div>
+    <div class="selector">
+        <p>Click and drag to add tasks</p>
+        <div id="task-menu"></div>
+    </div>
+<div class="selector">
+    <div> 
+        <p>Click and drag to add devices</p>
+        <button class="modern-button" id="add-device">Add Device</button>
+        <div id="device-menu"></div>
+    </div>
+    <div id="info">
+        <form class="validated-form" id="device-setup-form">
+            <button class="delete-button" id="remove-device">Remove Device</button>
+            <label for="setDevice">Device Type: </label>
+            <select id = "setDevice" name="devtype"></select>
+
+            <label for="devname">Device ID: </label>
+            <input type="text" id="devname" name="devname" required>
+
+
+            <label for="Controller">Controller: </label>
+            <input type="text" id="Controller" name="controller" required>
+
+            <div id="device-parameters"></div>
+            
+            <button type="submit">Add Device</button>
+        </form>
+        <div id="code-text" style="display:none">
+            <h1 id="code-area-label">Task Definition</h1>
+            <textarea id="code-textarea" readonly>int abc = 123;</textarea>
+        </div>
+    </div>
+</div>
+    <script>
+        window.graphElements = [{"group":"nodes","data":{"id":"requestTest%0","label":"requestTest","ignoreWriteBacks":[],"icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"position":{"x":300,"y":50},"classes":"task"},{"group":"nodes","data":{"id":"KBD","label":"KBD","kind":31,"icon":"https://cise.ufl.edu/~barber.seth/images/keyboard_icon.svg"},"position":{"x":150,"y":100},"classes":"device"},{"data":{"id":"edge0","source":"KBD","target":"requestTest%0","targAlias":"kbd","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"triggerEdge1","source":"KBD","target":"requestTest%0","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"trigger"},{"group":"nodes","data":{"id":"playSoundHttp%1","label":"playSoundHttp","ignoreWriteBacks":["endpt"],"icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"position":{"x":300,"y":150},"classes":"task"},{"group":"nodes","data":{"id":"king","label":"king","kind":34,"icon":"https://cise.ufl.edu/~barber.seth/images/website_icon.svg"},"position":{"x":150,"y":100},"classes":"device"},{"group":"nodes","data":{"id":"AP","label":"AP","kind":36,"icon":"https://cise.ufl.edu/~barber.seth/images/audio_player_icon.svg"},"position":{"x":150,"y":100},"classes":"device"},{"data":{"id":"edge2","source":"king","target":"playSoundHttp%1","targAlias":"endpt","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge3","source":"playSoundHttp%1","target":"king","targAlias":"endpt","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"edge4","source":"playSoundHttp%1","target":"AP","targAlias":"ap","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"triggerEdge5","source":"king","target":"playSoundHttp%1","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"trigger"},{"group":"nodes","data":{"id":"playSound%2","label":"playSound","ignoreWriteBacks":[],"icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"position":{"x":300,"y":250},"classes":"task"},{"group":"nodes","data":{"id":"KBD","label":"KBD","kind":31,"icon":"https://cise.ufl.edu/~barber.seth/images/keyboard_icon.svg"},"position":{"x":150,"y":100},"classes":"device"},{"group":"nodes","data":{"id":"AP","label":"AP","kind":36,"icon":"https://cise.ufl.edu/~barber.seth/images/audio_player_icon.svg"},"position":{"x":150,"y":100},"classes":"device"},{"data":{"id":"edge6","source":"AP","target":"playSound%2","targAlias":"ap","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge7","source":"KBD","target":"playSound%2","targAlias":"kbd","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"input-edge"},{"data":{"id":"edge8","source":"playSound%2","target":"AP","targAlias":"ap","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"output-edge"},{"data":{"id":"triggerEdge9","source":"KBD","target":"playSound%2","icon":"https://cise.ufl.edu/~barber.seth/images/undefined_icon.svg"},"classes":"trigger"}];
+        window.taskToSrc = {"playSound":"{<br>    if (kbd.key == \"R\") {<br>        println(\"RESUMING AUDIO: \" + ap.file);<br>        ap.paused = false;<br>    }<br>    else if (kbd.key == \"P\") {<br>        println(\"PAUSING AUDIO: \" + ap.file);<br>        ap.paused = true;<br>    }<br>    else if (kbd.key == \"T\") {<br>        println(\"SETTING AUDIO TO TEST.WAV\");<br>        ap.file = \"test.wav\";<br>    }<br>    else if (kbd.key == \"S\") {<br>        println(\"SETTING AUDIO TO SECOND.WAV\");<br>        ap.file = \"second.wav\";<br>    }<br>    else if (kbd.key == \"U\") {<br>        ap.volume += 5;<br>    }<br>    else if (kbd.key == \"D\") {<br>        ap.volume -= 5;<br>    }<br>}","playSoundHttp":"{<br>    if(getTrigger() == \"initial\"){<br>        println(\"Hit initial\"); <br>        return; <br>    }<br><br>    if(endpt.requestMethod == \"POST\"){<br>        if(endpt.requestJson == \"pause\"){<br>            ap.paused = true; <br>        }<br>        else if(endpt.requestJson == \"resume\"){<br>            ap.paused = false;<br>        }<br>        else if(endpt.requestJson == \"test\" || endpt.requestJson == \"second\"){<br>            ap.paused = false; <br>            ap.file = endpt.requestJson + \".wav\"; <br>        }   <br>        else{<br>            print(endpt.requestJson); <br>        }<br>    }<br>    endpt.responseCode = 200;<br>}","requestTest":"{<br>    if(KBD.key == \"Space\"){<br>       string resJson =  httpRequest(\"GET\", \"jsonplaceholder.typicode.com\", \"/todos/1\", \"\"); <br>       println(resJson); <br>    }<br>}"};
+        window.taskMap = {"requestTest":"{\"taskDesc\":{\"name\":\"requestTest\",\"binded_devices\":[{\"device_name\":\"KBD\",\"type\":31,\"controller\":\"ctl\",\"port_maps\":{\"mode\":\"all\"},\"initialValue\":{\"key\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1}],\"bytecode_offset\":196,\"inDevices\":[\"KBD\"],\"outDevices\":[],\"hostController\":\"ctl\",\"triggers\":[{\"rule\":[\"KBD\"],\"id\":\"\",\"priority\":1}]},\"inAlias\":[{\"name\":\"kbd\",\"type\":31}],\"outAlias\":[],\"triggerAlias\":[[{\"name\":\"kbd\",\"type\":31}]]}","playSoundHttp":"{\"taskDesc\":{\"name\":\"playSoundHttp\",\"binded_devices\":[{\"device_name\":\"king\",\"type\":34,\"controller\":\"ctl\",\"port_maps\":{\"endpoint\":\"/api/play\"},\"initialValue\":{\"sessionID\":0,\"requestJson\":\"\",\"responseCode\":0,\"requestMethod\":\"\",\"responseJson\":\"\"},\"isVtype\":false,\"readPolicy\":1,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":true,\"deviceKind\":1},{\"device_name\":\"AP\",\"type\":36,\"controller\":\"ctl\",\"port_maps\":{\"directory\":\"samples/client\"},\"initialValue\":{\"file\":\"\",\"paused\":false,\"volume\":0},\"isVtype\":false,\"readPolicy\":1,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":0}],\"bytecode_offset\":109,\"inDevices\":[\"king\"],\"outDevices\":[\"king\",\"AP\"],\"hostController\":\"ctl\",\"triggers\":[{\"rule\":[\"king\"],\"id\":\"\",\"priority\":1}]},\"inAlias\":[{\"name\":\"endpt\",\"type\":34}],\"outAlias\":[{\"name\":\"endpt\",\"type\":34},{\"name\":\"ap\",\"type\":36}],\"triggerAlias\":[[{\"name\":\"endpt\",\"type\":34}]]}","playSound":"{\"taskDesc\":{\"name\":\"playSound\",\"binded_devices\":[{\"device_name\":\"KBD\",\"type\":31,\"controller\":\"ctl\",\"port_maps\":{\"mode\":\"all\"},\"initialValue\":{\"key\":\"\"},\"isVtype\":false,\"readPolicy\":0,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":1},{\"device_name\":\"AP\",\"type\":36,\"controller\":\"ctl\",\"port_maps\":{\"directory\":\"samples/client\"},\"initialValue\":{\"file\":\"\",\"paused\":false,\"volume\":0},\"isVtype\":false,\"readPolicy\":1,\"overwritePolicy\":3,\"isYield\":true,\"polling_period\":-1,\"isConst\":true,\"ignoreWriteBacks\":false,\"deviceKind\":0}],\"bytecode_offset\":0,\"inDevices\":[\"AP\",\"KBD\"],\"outDevices\":[\"AP\"],\"hostController\":\"ctl\",\"triggers\":[{\"rule\":[\"KBD\"],\"id\":\"\",\"priority\":1}]},\"inAlias\":[{\"name\":\"ap\",\"type\":36},{\"name\":\"kbd\",\"type\":31}],\"outAlias\":[{\"name\":\"ap\",\"type\":36}],\"triggerAlias\":[[{\"name\":\"kbd\",\"type\":31}]]}"}; 
+        window.iconURIs = ["https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/bool_icon.svg","https://cise.ufl.edu/~barber.seth/images/int_icon.svg","https://cise.ufl.edu/~barber.seth/images/float_icon.svg","https://cise.ufl.edu/~barber.seth/images/string_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/list_icon.svg","https://cise.ufl.edu/~barber.seth/images/map_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/file_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/file_log_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/led_icon.svg","https://cise.ufl.edu/~barber.seth/images/pwm_led_icon.svg","https://cise.ufl.edu/~barber.seth/images/rgb_led_icon.svg","https://cise.ufl.edu/~barber.seth/images/button_icon.svg","https://cise.ufl.edu/~barber.seth/images/active_buzzer_icon.svg","https://cise.ufl.edu/~barber.seth/images/passive_buzzer_icon.svg","https://cise.ufl.edu/~barber.seth/images/potentiometer_icon.svg","https://cise.ufl.edu/~barber.seth/images/photoresistor_icon.svg","https://cise.ufl.edu/~barber.seth/images/thermistor_icon.svg","https://cise.ufl.edu/~barber.seth/images/thumb_joystick_icon.svg","https://cise.ufl.edu/~barber.seth/images/servo_icon.svg","https://cise.ufl.edu/~barber.seth/images/dc_motor_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/lcd_display_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/default_icon.svg","https://cise.ufl.edu/~barber.seth/images/keyboard_icon.svg","https://cise.ufl.edu/~barber.seth/images/mouse_icon.svg","https://cise.ufl.edu/~barber.seth/images/gamepad_icon.svg","https://cise.ufl.edu/~barber.seth/images/website_icon.svg","https://cise.ufl.edu/~barber.seth/images/write_file_icon.svg","https://cise.ufl.edu/~barber.seth/images/audio_player_icon.svg"]; 
+        window.devtypeArray = ["NA","NA","NA","NA","NA","NA","NA","NA","NA","TIMER_TEST","LINE_WRITER","READ_FILE","FILE_LOG","READ_FILE_POLL","LIGHT","PWM_LED","RGB_LED","BUTTON","ACTIVE_BUZZER","PASSIVE_BUZZER","POTENTIOMETER","PHOTORESISTOR","THERMISTOR","FN_JOYSTICK","FN_SERVO","DC_MOTOR","STEP_MOTOR","DHT11","LCD_SCREEN","MOTION_SENSOR","ULTRASONIC","KEYBOARD","MOUSE","GAMEPAD","HTTP_ENDPOINT","TEXT_FILE","AUDIO_PLAYER"]; 
+        window.devtypeParams = {"LIGHT":[{"param":"PIN","type":"number","range":[0,26]}],"BUTTON":[{"param":"PIN","type":"number","range":[0,26]}],"LINE_WRITER":[{"param":"file","type":"string"}],"FILE_LOG":[{"param":"file","type":"string"}],"KEYBOARD":[{"param":"mode","type":"multiple-choice","choices":["any","all"]}],"HTTP_ENDPOINT":[{"param":"endpoint","type":"string"}],"POTENTIOMETER":[{"param":"ADC_CHANNEL","type":"multiple-choice","choices":[0,1]}],"RGB_LED":[{"param":"BLUE_PIN","type":"number"},{"param":"GREEN_PIN","type":"number"},{"param":"RED_PIN","type":"number"}],"AUDIO_PLAYER":[{"param":"directory","type":"string"}],"MOUSE":[{"param":"mode","type":"multiple-choice","choices":["all","any"]},{"param":"cooldown","type":"number"}],"GAMEPAD":[{"param":"mode","type":"multiple-choice","choices":["automatic","manual"]}]}; 
+        window.originalCodesMap = {"playSound":"task playSound(KEYBOARD kbd, AUDIO_PLAYER ap) : triggerOn(kbd), processPolicy({ap : { \"read\" : \"any\" }}) {\n    if (kbd.key == \"R\") {\n        println(\"RESUMING AUDIO: \" + ap.file);\n        ap.paused = false;\n    }\n    else if (kbd.key == \"P\") {\n        println(\"PAUSING AUDIO: \" + ap.file);\n        ap.paused = true;\n    }\n    else if (kbd.key == \"T\") {\n        println(\"SETTING AUDIO TO TEST.WAV\");\n        ap.file = \"test.wav\";\n    }\n    else if (kbd.key == \"S\") {\n        println(\"SETTING AUDIO TO SECOND.WAV\");\n        ap.file = \"second.wav\";\n    }\n    else if (kbd.key == \"U\") {\n        ap.volume += 5;\n    }\n    else if (kbd.key == \"D\") {\n        ap.volume -= 5;\n    }\n}","playSoundHttp":"task playSoundHttp(HTTP_ENDPOINT endpt, AUDIO_PLAYER ap) \n: triggerOn(endpt), processPolicy({ap : { \"read\" : \"any\" }, endpt : {\"ignoreWriteBacks\" : true, \"read\" : \"any\"}})\n{\n    if(getTrigger() == \"initial\"){\n        println(\"Hit initial\"); \n        return; \n    }\n\n    if(endpt.requestMethod == \"POST\"){\n        if(endpt.requestJson == \"pause\"){\n            ap.paused = true; \n        }\n        else if(endpt.requestJson == \"resume\"){\n            ap.paused = false;\n        }\n        else if(endpt.requestJson == \"test\" || endpt.requestJson == \"second\"){\n            ap.paused = false; \n            ap.file = endpt.requestJson + \".wav\"; \n        }   \n        else{\n            print(endpt.requestJson); \n        }\n    }\n    endpt.responseCode = 200;\n}","requestTest":"task requestTest(KEYBOARD kbd)\n: triggerOn(kbd)\n{\n    if(kbd.key == \"Space\"){\n       string resJson =  httpRequest(\"GET\", \"jsonplaceholder.typicode.com\", \"/todos/1\", \"\"); \n       println(resJson); \n    }\n}"};
+    </script>
+    <script src="https://cise.ufl.edu/~barber.seth/scripts/webview.js"></script>
+    <script src="https://cise.ufl.edu/~barber.seth/scripts/helpScript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.js"></script>
+    <srcipt src="https://cise.ufl.edu/~barber.seth/scripts/custom-clike.js"</script>
+    <script>
+        let editor = CodeMirror.fromTextArea(document.getElementById('code-textarea'), {
+            lineNumbers: true,
+            // mode: 'text/x-scala',
+            mode: "text/x-c++src",
+            theme: 'ayu-mirage',
+            styleActiveLine: true
+        });
+    </script>
+</body>
+</html>
+		 
