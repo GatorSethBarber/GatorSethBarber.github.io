@@ -121,7 +121,7 @@
         });
     </script>
     <script>
-        console.log("CY is ", cy);
+        console.log("CY is ", window.cy);
         window.addEventListener('message', function(event) {
             console.log('Iframe received message:', event.data);
             
@@ -130,7 +130,7 @@
                 document.getElementById('status').textContent = 'Applying layout: ' + layoutName;
                 
                 try {
-                    cy.layout({
+                    window.cy.layout({
                         name: layoutName,
                         animate: true,
                         animationDuration: 500,
@@ -152,7 +152,7 @@
             
             if (event.data.type === 'requestScreenshot') {
                 try {
-                    var pngData = cy.png({
+                    var pngData = window.cy.png({
                         full: true,
                         scale: 2,
                         output: 'base64'
