@@ -47,8 +47,8 @@ task fileTask(LINE_WRITER readFile, LINE_WRITER writeFile)
 
 
 setup() {
-    LINE_WRITER fileOne = "COLIN::file-one.txt";
-    LINE_WRITER fileTwo = "COLIN::file-two.txt";
+    LINE_WRITER fileOne = "SERVER::file-one.txt";
+    LINE_WRITER fileTwo = "SERVER::file-two.txt";
     LIGHT green_led = "RPI::PIN-21"; 
     lightTask(fileOne, fileTwo, green_led);
     fileTask(fileTwo, fileOne);
