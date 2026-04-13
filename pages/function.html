@@ -21,8 +21,16 @@
         </style>
     </head>
     <body>
-        <textarea id="grammar" style="height:100vh">
-task changeTask(LINE_WRITER lw, string message)
+        <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.min.js" crossorigin="anonymous"></script>
+        <!-- // Gemini for replacing textarea with div -->
+        <div id="edit-area"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.js"></script>
+        <script src="./custom-clike.js"></script>
+        <script>
+            const myDiv = document.getElementById('edit-area');
+            // Gemini
+            const view = CodeMirror(myDiv, {
+                value: `task changeTask(LINE_WRITER lw, string message)
 : triggerOn(lw)
 {
     if(lw.msg == "green" || lw.msg == "red"){
@@ -49,8 +57,6 @@ task buttonLog(BUTTON button, string mode, map<string, int> countMap, LINE_WRITE
         fl.msg = "Green was pressed " + toString(greenCnt) + " times. " + "Red was pressed " + toString(redCnt) + " times.";
     }
 }
-
-
 
 task buttonLight(BUTTON button, string mode, LIGHT redLight, LIGHT greenLight)
 : triggerOn(button)
@@ -82,37 +88,39 @@ setup(){
     changeTask(lw, mode);
     buttonLog(button, mode, countMap, fl);
     buttonLight(button, mode, redLight, greenLight);
-}</textarea>
-        <!-- <script src="https://codemirror.net/codemirror.js"></script> -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.js"></script>
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/mode/clike/clike.min.js"></script> -->
-        <script src="./custom-clike.js"></script>
-        <!-- <script defer src="https://codemirror.net/demo.js"></script> -->
-        <script>
-            
-            let editor = CodeMirror.fromTextArea(document.getElementById('grammar'), {
-                lineNumbers: true,
-                // mode: 'text/x-scala',
+}`, // Initial content
                 mode: 'text/x-blueshift',
                 theme: 'ayu-mirage',
                 styleActiveLine: true
             });
-            // let from = {line: loc.start.line-1, ch: loc.start.column-1 - (loc.start.offset === loc.end.offset)};
-            // let to = {line: loc.end.line-1, ch: loc.end.column-1};
-            // let from = {line: 1, ch: 10};
-            // let to = {line: 1, ch: 40};
-
-            // console.log(editor);
-
-            // Gemini helped
-            const codeError = `
-                text-underline-offset: 2px;
-                text-decoration: wavy;
-                text-decoration-line: underline;
-                text-decoration-color: red;
-            `
-            // editor.getDoc().markText(from, to, {css: codeError, title: 'Loop'});
+            
 
         </script>
+        <script>
+            // Listen for messages from Qualtrics
+        window.addEventListener('message', function(event) {
+            console.log('Iframe received message:', event.data);
+            
+            if (event.data.type === 'changeLayout') {
+                
+            }
+            
+            if (event.data.type === 'requestScreenshot') {
+                // https://www.npmjs.com/package/html-to-image
+                htmlToImage
+                    .toPng(document.getElementById('edit-area'), { skipFonts: true })
+                    .then((dataUrl) => {
+                        // https://stackoverflow.com/questions/12238545/how-to-save-an-image-via-javascript
+                        // Stjepan Suton
+                        const downloadImage = document.createElement("a");
+                        document.body.appendChild(downloadImage);
+                        downloadImage.setAttribute("download", "image");
+                        downloadImage.href = dataUrl;
+                        downloadImage.click();
+                        downloadImage.remove();
+                    })
+                }
+        });        
+    </script>
     </body>
 </html>
