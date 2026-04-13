@@ -65,7 +65,7 @@ setup() {
             if (event.data.type === 'requestScreenshot') {
                 // https://www.npmjs.com/package/html-to-image
                 htmlToImage
-                    .toPng(document.getElementById('other'), { skipFonts: true })
+                    .toPng(document.getElementById('edit-area'), { skipFonts: true })
                     .then((dataUrl) => {
                         // https://stackoverflow.com/questions/12238545/how-to-save-an-image-via-javascript
                         // Stjepan Suton
