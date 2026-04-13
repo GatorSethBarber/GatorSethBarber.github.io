@@ -1,0 +1,128 @@
+<!-- https://stackoverflow.com/questions/41405016/how-to-underline-errors-with-codemirror -->
+ <!-- https://codemirror.net/5/demo/theme.html#dracula -->
+  <!-- https://codemirror.net/5/mode/clike/index.html -->
+   <!-- https://codemirror.net/5/doc/manual.html -->
+<!doctype html>
+<html lang=en-US>
+    <head>
+        <meta charset=utf8>
+        <title>Blueshift Code</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.css">
+        <link rel="stylesheet" href="./ayu-mirage.css">
+        <!-- Gemini to https://stackoverflow.com/questions/47696873/how-to-change-font-for-the-codemirror-editor#:~:text=.CodeMirror%20*%20%7B%20/*%20%5E%20*/,5%2C4372%2026%2028 -->
+        <style>
+            body {
+                background-color: #322a69;
+            }
+            .CodeMirror {
+                font-size: 1rem;
+                height: 95vh
+            }
+        </style>
+    </head>
+    <body>
+        <textarea id="grammar" style="height:100vh">
+task playSound(KEYBOARD kbd, AUDIO_PLAYER ap) : triggerOn(kbd), processPolicy({ap : { "read" : "any" }}) {
+    if (kbd.key == "R") {
+        println("RESUMING AUDIO: " + ap.file);
+        ap.paused = false;
+    }
+    else if (kbd.key == "P") {
+        println("PAUSING AUDIO: " + ap.file);
+        ap.paused = true;
+    }
+    else if (kbd.key == "T") {
+        println("SETTING AUDIO TO TEST.WAV");
+        ap.file = "test.wav";
+    }
+    else if (kbd.key == "S") {
+        println("SETTING AUDIO TO SECOND.WAV");
+        ap.file = "second.wav";
+    }
+    else if (kbd.key == "U") {
+        ap.volume += 5;
+    }
+    else if (kbd.key == "D") {
+        ap.volume -= 5;
+    }
+}
+
+
+task playSoundHttp(HTTP_ENDPOINT endpt, AUDIO_PLAYER ap) 
+: triggerOn(endpt), processPolicy({ap : { "read" : "any" }, endpt : {"ignoreWriteBacks" : true, "read" : "any"}})
+{
+    if(getTrigger() == "initial"){
+        println("Hit initial"); 
+        return; 
+    }
+
+    if(endpt.requestMethod == "POST"){
+        if(endpt.requestJson == "pause"){
+            ap.paused = true; 
+        }
+        else if(endpt.requestJson == "resume"){
+            ap.paused = false;
+        }
+        else if(endpt.requestJson == "test" || endpt.requestJson == "second"){
+            ap.paused = false; 
+            ap.file = endpt.requestJson + ".wav"; 
+        }   
+        else{
+            print(endpt.requestJson); 
+        }
+    }
+    endpt.responseCode = 200;
+}
+
+task requestTest(KEYBOARD kbd)
+: triggerOn(kbd)
+{
+    if(kbd.key == "Space"){
+       string resJson =  httpRequest("GET", "jsonplaceholder.typicode.com", "/todos/1", ""); 
+       println(resJson); 
+    }
+}
+
+
+setup() {
+
+    HTTP_ENDPOINT king = "ctl::endpoint-/api/play"; 
+    AUDIO_PLAYER AP = "ctl::directory-samples/client";
+    KEYBOARD KBD = "ctl::mode-all";
+    //playSound(KBD, AP);
+    //playSoundHttp(king, AP); 
+    requestTest(KBD); 
+}</textarea>
+        <!-- <script src="https://codemirror.net/codemirror.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/codemirror.min.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/mode/clike/clike.min.js"></script> -->
+        <script src="./custom-clike.js"></script>
+        <!-- <script defer src="https://codemirror.net/demo.js"></script> -->
+        <script>
+            
+            let editor = CodeMirror.fromTextArea(document.getElementById('grammar'), {
+                lineNumbers: true,
+                // mode: 'text/x-scala',
+                mode: 'text/x-blueshift',
+                theme: 'ayu-mirage',
+                styleActiveLine: true
+            });
+            // let from = {line: loc.start.line-1, ch: loc.start.column-1 - (loc.start.offset === loc.end.offset)};
+            // let to = {line: loc.end.line-1, ch: loc.end.column-1};
+            // let from = {line: 1, ch: 10};
+            // let to = {line: 1, ch: 40};
+
+            // console.log(editor);
+
+            // Gemini helped
+            const codeError = `
+                text-underline-offset: 2px;
+                text-decoration: wavy;
+                text-decoration-line: underline;
+                text-decoration-color: red;
+            `
+            // editor.getDoc().markText(from, to, {css: codeError, title: 'Loop'});
+
+        </script>
+    </body>
+</html>
